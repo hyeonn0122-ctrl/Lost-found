@@ -2,458 +2,281 @@
 
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>분실물 게시판</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Gmarket+Sans:wght@300;500;700&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #f5f2ee; --surface: #fdfcfa; --border: #e8e2d9;
-      --text: #1a1814; --text-muted: #8a8278;
-      --lost: #c0392b; --lost-bg: #fdf0ee;
-      --found: #2c7a4b; --found-bg: #eef7f2;
-      --accent: #d4a843; --shadow: 0 2px 12px rgba(0,0,0,0.06);
-    }
-    body { background: var(--bg); font-family: 'Noto Sans KR', sans-serif; color: var(--text); min-height: 100vh; }
-    .app { max-width: 680px; margin: 0 auto; padding: 0 16px 80px; }
-    .header { padding: 48px 0 32px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
-    .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
-    .header-label { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); font-family: 'Gmarket Sans', sans-serif; font-weight: 300; margin-bottom: 8px; }
-    .header h1 { font-family: 'Gmarket Sans', sans-serif; font-weight: 700; font-size: 32px; line-height: 1.1; letter-spacing: -0.02em; }
-    .header-sub { margin-top: 8px; font-size: 13px; color: var(--text-muted); font-weight: 300; }
-    .add-btn { background: var(--text); color: var(--bg); border: none; border-radius: 100px; padding: 10px 20px; font-size: 13px; font-family: 'Noto Sans KR', sans-serif; font-weight: 500; cursor: pointer; transition: transform 0.15s, opacity 0.15s; white-space: nowrap; margin-top: 4px; }
-    .add-btn:hover { opacity: 0.8; transform: translateY(-1px); }
-    .stats { display: flex; gap: 16px; margin-bottom: 20px; }
-    .stat { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; text-align: center; }
-    .stat-num { font-family: 'Gmarket Sans', sans-serif; font-weight: 700; font-size: 28px; line-height: 1; margin-bottom: 4px; }
-    .stat-num.lost { color: var(--lost); }
-    .stat-num.found { color: var(--found); }
-    .stat-num.resolved { color: var(--accent); }
-    .stat-label { font-size: 11px; color: var(--text-muted); letter-spacing: 0.05em; }
-    .filter-group { margin-bottom: 10px; }
-    .filter-group-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); font-family: 'Gmarket Sans', sans-serif; margin-bottom: 6px; }
-    .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; }
-    .filter-btn { background: none; border: 1px solid var(--border); border-radius: 100px; padding: 6px 14px; font-size: 13px; font-family: 'Noto Sans KR', sans-serif; cursor: pointer; color: var(--text-muted); transition: all 0.15s; white-space: nowrap; }
-    .filter-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
-    .filter-btn.office-btn.active { background: none; font-weight: 500; }
-    .cards { display: flex; flex-direction: column; gap: 12px; }
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; position: relative; overflow: hidden; }
-    .card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 3px 0 0 3px; }
-    .card.lost::before { background: var(--lost); }
-    .card.found::before { background: var(--found); }
-    .card.resolved { opacity: 0.55; }
-    .card:hover:not(.resolved) { transform: translateY(-2px); box-shadow: var(--shadow); }
-    .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-    .card-emoji { font-size: 24px; flex-shrink: 0; }
-    .card-thumb { width: 48px; height: 48px; border-radius: 10px; overflow: hidden; flex-shrink: 0; position: relative; cursor: pointer; border: 1px solid var(--border); }
-    .card-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .thumb-count { position: absolute; bottom: 3px; right: 3px; background: rgba(0,0,0,0.6); color: white; font-size: 9px; padding: 1px 4px; border-radius: 4px; font-family: 'Gmarket Sans', sans-serif; font-weight: 500; }
-    .thumb-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0); display: flex; align-items: center; justify-content: center; font-size: 14px; opacity: 0; transition: all 0.15s; }
-    .card-thumb:hover .thumb-overlay { background: rgba(0,0,0,0.35); opacity: 1; }
-    .card-meta { display: flex; align-items: center; gap: 8px; flex: 1; }
-    .tag { font-size: 10px; font-weight: 500; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 100px; font-family: 'Gmarket Sans', sans-serif; }
-    .tag.lost { background: var(--lost-bg); color: var(--lost); }
-    .tag.found { background: var(--found-bg); color: var(--found); }
-    .card-date { font-size: 11px; color: var(--text-muted); }
-    .resolved-badge { font-size: 10px; background: #f0ebe0; color: var(--accent); padding: 3px 8px; border-radius: 100px; font-weight: 500; }
-    .card-title { font-family: 'Gmarket Sans', sans-serif; font-weight: 500; font-size: 16px; margin-bottom: 6px; letter-spacing: -0.01em; }
-    .card-locations { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .card-lost-loc { font-size: 12px; color: var(--text-muted); }
-    .office-pill { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 100px; border: 1px solid; font-family: 'Gmarket Sans', sans-serif; }
-    .card-detail { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
-    .card-desc { font-size: 13px; color: var(--text); line-height: 1.6; margin-bottom: 8px; }
-    .card-contact { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
-    .gallery-single { position: relative; border-radius: 14px; overflow: hidden; margin-bottom: 14px; cursor: pointer; max-height: 260px; }
-    .gallery-single img { width: 100%; max-height: 260px; object-fit: cover; display: block; transition: transform 0.2s; }
-    .gallery-single:hover img { transform: scale(1.02); }
-    .image-hint { position: absolute; bottom: 8px; right: 10px; font-size: 10px; color: white; background: rgba(0,0,0,0.45); padding: 3px 8px; border-radius: 100px; }
-    .gallery-grid { display: grid; gap: 4px; margin-bottom: 14px; border-radius: 14px; overflow: hidden; }
-    .gallery-2 { grid-template-columns: 1fr 1fr; }
-    .gallery-3 { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
-    .gallery-3 .gallery-cell:first-child { grid-column: 1 / -1; aspect-ratio: 16/7 !important; }
-    .gallery-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
-    .gallery-cell { position: relative; overflow: hidden; cursor: pointer; aspect-ratio: 1; }
-    .gallery-cell img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.2s; }
-    .gallery-cell:hover img { transform: scale(1.05); }
-    .gallery-more { position: absolute; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; color: white; font-family: 'Gmarket Sans', sans-serif; font-weight: 700; font-size: 22px; }
-    .match-badge { background: linear-gradient(135deg, #fdf8ee, #fef3d0); border: 1px solid #e8d5a0; border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 3px; }
-    .match-icon { font-size: 12px; color: var(--accent); }
-    .match-text { font-size: 13px; font-weight: 500; color: #8a6820; }
-    .match-reason { font-size: 11px; color: #a88030; }
-    .match-loading { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; padding: 8px 0; }
-    .dot-pulse::after { content: '...'; animation: dots 1.2s steps(3,end) infinite; }
-    @keyframes dots { 0%,20%{content:'.';} 40%{content:'..';} 60%,100%{content:'...';} }
-    .resolve-btn { background: var(--text); color: var(--bg); border: none; border-radius: 10px; padding: 8px 16px; font-size: 13px; font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: opacity 0.15s; }
-    .resolve-btn:hover { opacity: 0.75; }
-    .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; cursor: pointer; animation: fadeIn 0.2s ease; }
-    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-    .lightbox img { max-width: 90%; max-height: 80vh; border-radius: 12px; object-fit: contain; cursor: default; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
-    .lightbox-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.15); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .lightbox-close:hover { background: rgba(255,255,255,0.3); }
-    .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.15); border: none; color: white; width: 44px; height: 44px; border-radius: 50%; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
-    .lightbox-nav:hover { background: rgba(255,255,255,0.3); }
-    .lightbox-nav.left { left: 16px; }
-    .lightbox-nav.right { right: 16px; }
-    .lightbox-dots { position: absolute; bottom: 20px; display: flex; gap: 6px; }
-    .lightbox-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; transition: background 0.15s; }
-    .lightbox-dot.active { background: white; }
-    .empty { text-align: center; padding: 60px 0; color: var(--text-muted); }
-    .empty-icon { font-size: 40px; margin-bottom: 12px; }
-    .empty p { font-size: 14px; }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: flex-end; justify-content: center; padding: 16px; }
-    .modal { background: var(--surface); border-radius: 24px 24px 16px 16px; padding: 28px 24px; width: 100%; max-width: 480px; max-height: 92vh; overflow-y: auto; animation: slideUp 0.25s ease; }
-    @keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
-    .modal h2 { font-family: 'Gmarket Sans', sans-serif; font-weight: 700; font-size: 20px; margin-bottom: 20px; }
-    .form-row { margin-bottom: 14px; }
-    .form-label { display: block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-family: 'Gmarket Sans', sans-serif; font-weight: 300; margin-bottom: 6px; }
-    .type-toggle { display: flex; gap: 8px; }
-    .type-btn { flex: 1; padding: 10px; border-radius: 12px; border: 1px solid var(--border); background: none; font-size: 13px; font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: all 0.15s; color: var(--text-muted); }
-    .type-btn.active-lost { background: var(--lost-bg); border-color: var(--lost); color: var(--lost); font-weight: 500; }
-    .type-btn.active-found { background: var(--found-bg); border-color: var(--found); color: var(--found); font-weight: 500; }
-    .office-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-    .office-select-btn { padding: 10px 8px; border-radius: 12px; border: 1px solid var(--border); background: none; font-size: 12px; font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: all 0.15s; color: var(--text-muted); text-align: center; }
-    .photo-section { display: flex; flex-direction: column; gap: 8px; }
-    .photo-previews { display: flex; flex-wrap: wrap; gap: 6px; }
-    .photo-preview { width: 72px; height: 72px; border-radius: 10px; overflow: hidden; position: relative; border: 1px solid var(--border); flex-shrink: 0; }
-    .photo-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .photo-preview-remove { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.55); color: white; border: none; width: 20px; height: 20px; border-radius: 50%; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .photo-add-btn { width: 72px; height: 72px; border-radius: 10px; border: 1.5px dashed var(--border); background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; font-size: 20px; gap: 2px; flex-shrink: 0; }
-    .photo-add-btn:hover { border-color: var(--text-muted); background: #f0ece6; }
-    .photo-add-label { font-size: 9px; color: var(--text-muted); }
-    .photo-hint { font-size: 11px; color: var(--text-muted); }
-    .emoji-grid { display: flex; flex-wrap: wrap; gap: 6px; }
-    .emoji-btn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border); background: none; font-size: 18px; cursor: pointer; transition: all 0.1s; display: flex; align-items: center; justify-content: center; }
-    .emoji-btn.active { background: var(--text); border-color: var(--text); }
-    input, select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; font-size: 14px; font-family: 'Noto Sans KR', sans-serif; color: var(--text); outline: none; transition: border-color 0.15s; }
-    input:focus, select:focus, textarea:focus { border-color: var(--text); }
-    textarea { resize: none; height: 72px; }
-    .modal-actions { display: flex; gap: 8px; margin-top: 20px; }
-    .cancel-btn { flex: 1; padding: 12px; border-radius: 14px; border: 1px solid var(--border); background: none; font-size: 14px; font-family: 'Noto Sans KR', sans-serif; cursor: pointer; color: var(--text-muted); }
-    .submit-btn { flex: 2; padding: 12px; border-radius: 14px; border: none; background: var(--text); color: var(--bg); font-size: 14px; font-family: 'Noto Sans KR', sans-serif; font-weight: 500; cursor: pointer; transition: opacity 0.15s; }
-    .submit-btn:hover { opacity: 0.8; }
-    @media (max-width: 480px) { .header h1 { font-size: 26px; } .stats { gap: 10px; } }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>분실물 게시판</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f5f2ee;--surface:#fdfcfa;--border:#e8e2d9;--text:#1a1814;--muted:#8a8278;--lost:#c0392b;--lost-bg:#fdf0ee;--found:#2c7a4b;--found-bg:#eef7f2;--accent:#d4a843}
+body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;color:var(--text);min-height:100vh}
+.app{max-width:680px;margin:0 auto;padding:0 16px 80px}
+.header{padding:40px 0 28px;border-bottom:1px solid var(--border);margin-bottom:28px;display:flex;justify-content:space-between;align-items:flex-start}
+.header h1{font-size:30px;font-weight:700;letter-spacing:-0.02em;line-height:1.1}
+.header p{margin-top:6px;font-size:13px;color:var(--muted)}
+.add-btn{background:var(--text);color:var(--bg);border:none;border-radius:100px;padding:10px 18px;font-size:13px;cursor:pointer;white-space:nowrap;margin-top:4px;font-family:inherit}
+.stats{display:flex;gap:12px;margin-bottom:20px}
+.stat{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center}
+.stat-num{font-size:26px;font-weight:700;line-height:1;margin-bottom:3px}
+.stat-num.lost{color:var(--lost)}.stat-num.found{color:var(--found)}.stat-num.resolved{color:var(--accent)}
+.stat-label{font-size:11px;color:var(--muted)}
+.filter-label{font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:5px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.fbtn{background:none;border:1px solid var(--border);border-radius:100px;padding:5px 13px;font-size:12px;cursor:pointer;color:var(--muted);font-family:inherit}
+.fbtn.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+.cards{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;cursor:pointer;position:relative;overflow:hidden;transition:transform 0.15s}
+.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.card.lost::before{background:var(--lost)}.card.found::before{background:var(--found)}
+.card.done{opacity:0.5}
+.card:hover:not(.done){transform:translateY(-1px)}
+.card-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.card-emoji{font-size:22px;flex-shrink:0}
+.card-thumb{width:44px;height:44px;border-radius:9px;overflow:hidden;flex-shrink:0;border:1px solid var(--border);cursor:pointer;position:relative}
+.card-thumb img{width:100%;height:100%;object-fit:cover}
+.card-thumb .plus{position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,0.6);color:#fff;font-size:8px;padding:1px 3px;border-radius:3px}
+.tag{font-size:10px;font-weight:500;padding:3px 8px;border-radius:100px}
+.tag.lost{background:var(--lost-bg);color:var(--lost)}.tag.found{background:var(--found-bg);color:var(--found)}
+.date{font-size:11px;color:var(--muted);flex:1}
+.done-badge{font-size:10px;background:#f0ebe0;color:var(--accent);padding:3px 8px;border-radius:100px}
+.card-title{font-size:15px;font-weight:500;margin-bottom:5px}
+.card-locs{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.loc{font-size:12px;color:var(--muted)}
+.office{font-size:11px;font-weight:500;padding:2px 8px;border-radius:100px;border:1px solid}
+.detail{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.desc{font-size:13px;line-height:1.6;margin-bottom:7px}
+.contact{font-size:12px;color:var(--muted);margin-bottom:12px}
+.gal1{border-radius:12px;overflow:hidden;margin-bottom:12px;cursor:pointer;max-height:220px}
+.gal1 img{width:100%;max-height:220px;object-fit:cover;display:block}
+.gal-grid{display:grid;gap:3px;margin-bottom:12px;border-radius:12px;overflow:hidden}
+.gal-grid.g2{grid-template-columns:1fr 1fr}
+.gal-grid.g3{grid-template-columns:1fr 1fr}
+.gal-grid.g3 .gc:first-child{grid-column:1/-1}
+.gal-grid.g4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.gc{position:relative;overflow:hidden;cursor:pointer;aspect-ratio:1}
+.gal-grid.g3 .gc:first-child{aspect-ratio:16/6}
+.gc img{width:100%;height:100%;object-fit:cover;display:block}
+.gc-more{position:absolute;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:700}
+.match{background:linear-gradient(135deg,#fdf8ee,#fef3d0);border:1px solid #e8d5a0;border-radius:10px;padding:9px 12px;margin-bottom:10px;font-size:12px}
+.match-title{font-weight:500;color:#8a6820;margin-bottom:2px}
+.match-why{color:#a88030;font-size:11px}
+.matching{font-size:12px;color:var(--muted);margin-bottom:10px}
+.resolve-btn{background:var(--text);color:var(--bg);border:none;border-radius:9px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:inherit}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;cursor:pointer}
+.lightbox img{max-width:100%;max-height:85vh;border-radius:10px;object-fit:contain;cursor:default}
+.lb-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:#fff;width:42px;height:42px;border-radius:50%;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lb-nav.l{left:12px}.lb-nav.r{right:12px}
+.lb-dots{position:absolute;bottom:16px;display:flex;gap:5px}
+.lb-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4);cursor:pointer}
+.lb-dot.on{background:#fff}
+.empty{text-align:center;padding:50px 0;color:var(--muted);font-size:14px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:flex-end;justify-content:center;padding:16px}
+.modal{background:var(--surface);border-radius:22px 22px 14px 14px;padding:26px 22px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto}
+.modal h2{font-size:19px;font-weight:700;margin-bottom:18px}
+.frow{margin-bottom:13px}
+.flabel{display:block;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.toggle{display:flex;gap:7px}
+.tbtn{flex:1;padding:9px;border-radius:11px;border:1px solid var(--border);background:none;font-size:13px;cursor:pointer;color:var(--muted);font-family:inherit}
+.tbtn.lost-on{background:var(--lost-bg);border-color:var(--lost);color:var(--lost);font-weight:500}
+.tbtn.found-on{background:var(--found-bg);border-color:var(--found);color:var(--found);font-weight:500}
+.office-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.obtn{padding:9px 7px;border-radius:11px;border:1px solid var(--border);background:none;font-size:12px;cursor:pointer;color:var(--muted);font-family:inherit;text-align:center}
+.photos{display:flex;flex-wrap:wrap;gap:6px}
+.ph-prev{width:68px;height:68px;border-radius:9px;overflow:hidden;position:relative;border:1px solid var(--border)}
+.ph-prev img{width:100%;height:100%;object-fit:cover}
+.ph-rm{position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.55);color:#fff;border:none;width:18px;height:18px;border-radius:50%;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ph-add{width:68px;height:68px;border-radius:9px;border:1.5px dashed var(--border);background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:18px;gap:2px}
+.ph-add span{font-size:9px;color:var(--muted)}
+.ph-hint{font-size:11px;color:var(--muted);margin-top:5px}
+.emoji-row{display:flex;flex-wrap:wrap;gap:5px}
+.ebtn{width:36px;height:36px;border-radius:9px;border:1px solid var(--border);background:none;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ebtn.on{background:var(--text);border-color:var(--text)}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:11px;padding:9px 13px;font-size:14px;font-family:inherit;color:var(--text);outline:none}
+textarea{resize:none;height:68px}
+.actions{display:flex;gap:7px;margin-top:18px}
+.cbtn{flex:1;padding:11px;border-radius:13px;border:1px solid var(--border);background:none;font-size:14px;cursor:pointer;color:var(--muted);font-family:inherit}
+.sbtn{flex:2;padding:11px;border-radius:13px;border:none;background:var(--text);color:var(--bg);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+</style>
 </head>
 <body>
-  <div id="root"></div>
-  <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+<div id="app"></div>
+<script>
+const OFFICES = ["본교무실","1학년 교무실","2학년 교무실","3학년 교무실"];
+const OCOL = {"본교무실":{bg:"#f0f0ff",c:"#4444cc",b:"#c8c8ee"},"1학년 교무실":{bg:"#fff0f5",c:"#cc3366",b:"#eec8d5"},"2학년 교무실":{bg:"#f0fff4",c:"#2c7a4b",b:"#c8eeda"},"3학년 교무실":{bg:"#fff8f0",c:"#cc6622",b:"#eeddc8"}};
+const LOCS = ["1층 현관","2층 복도","3층 도서관","급식실 앞","체육관","운동장","화장실 앞","기타"];
+const EMOJIS = ["🎧","📱","💻","📚","👜","🔑","☂️","🧣","⌚","💳","✏️","🎒"];
+const MAX_IMG = 5;
 
-```
-const SAMPLE_ITEMS = [
-  { id: 1, type: "lost", title: "갤럭시 버즈2 프로", description: "검정색 케이스, 오른쪽에 작은 스크래치 있음", lostLocation: "3층 도서관", pickupOffice: "2학년 교무실", date: "2025-05-09", contact: "2학년 3반 김민준", emoji: "🎧", images: [], resolved: false },
-  { id: 2, type: "found", title: "흰색 이어폰 케이스", description: "무선 이어폰 케이스인데 내용물 없음, 긁힌 자국 있음", lostLocation: "급식실 앞", pickupOffice: "본교무실", date: "2025-05-09", contact: "2학년 1반 박서연", emoji: "🎧", images: [], resolved: false },
-  { id: 3, type: "lost", title: "수학 문제집", description: "수능특강 수학, 이름 적혀있음 (이지훈)", lostLocation: "2층 복도", pickupOffice: "2학년 교무실", date: "2025-05-08", contact: "2학년 5반 이지훈", emoji: "📚", images: [], resolved: false },
-  { id: 4, type: "found", title: "우산", description: "네이비 체크무늬 장우산, 손잡이 나무", lostLocation: "1층 현관", pickupOffice: "1학년 교무실", date: "2025-05-07", contact: "2학년 2반 최유나", emoji: "☂️", images: [], resolved: true },
+let items = [
+{id:1,type:“lost”,title:“갤럭시 버즈2 프로”,desc:“검정색 케이스, 오른쪽에 작은 스크래치 있음”,loc:“3층 도서관”,office:“2학년 교무실”,date:“2025-05-09”,contact:“2학년 3반 김민준”,emoji:“🎧”,imgs:[],done:false},
+{id:2,type:“found”,title:“흰색 이어폰 케이스”,desc:“무선 이어폰 케이스인데 내용물 없음, 긁힌 자국 있음”,loc:“급식실 앞”,office:“본교무실”,date:“2025-05-09”,contact:“2학년 1반 박서연”,emoji:“🎧”,imgs:[],done:false},
+{id:3,type:“lost”,title:“수학 문제집”,desc:“수능특강 수학, 이름 적혀있음 (이지훈)”,loc:“2층 복도”,office:“2학년 교무실”,date:“2025-05-08”,contact:“2학년 5반 이지훈”,emoji:“📚”,imgs:[],done:false},
+{id:4,type:“found”,title:“우산”,desc:“네이비 체크무늬 장우산, 손잡이 나무”,loc:“1층 현관”,office:“1학년 교무실”,date:“2025-05-07”,contact:“2학년 2반 최유나”,emoji:“☂️”,imgs:[],done:true},
 ];
 
-const LOST_LOCATIONS = ["1층 현관", "2층 복도", "3층 도서관", "급식실 앞", "체육관", "운동장", "화장실 앞", "기타"];
-const PICKUP_OFFICES = ["본교무실", "1학년 교무실", "2학년 교무실", "3학년 교무실"];
-const OFFICE_COLORS = {
-  "본교무실": { bg: "#f0f0ff", color: "#4444cc", border: "#c8c8ee" },
-  "1학년 교무실": { bg: "#fff0f5", color: "#cc3366", border: "#eec8d5" },
-  "2학년 교무실": { bg: "#f0fff4", color: "#2c7a4b", border: "#c8eeda" },
-  "3학년 교무실": { bg: "#fff8f0", color: "#cc6622", border: "#eeddc8" },
-};
-const EMOJIS = ["🎧", "📱", "💻", "📚", "👜", "🔑", "☂️", "🧣", "⌚", "💳", "✏️", "🎒", "기타"];
-const MAX_IMAGES = 5;
+let filter=“all”, officeFilter=“all”, showForm=false, expandedId=null, lightbox=null;
+let form={type:“lost”,title:””,desc:””,loc:LOCS[0],office:OFFICES[0],emoji:EMOJIS[0],contact:””,imgs:[]};
+let matches={};
 
-function MatchBadge({ items, currentItem }) {
-  const [match, setMatch] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const checked = useRef(false);
+function $(s){return document.querySelector(s)}
+function render(){
+const app=document.getElementById(‘app’);
+const filtered=items.filter(i=>{
+const sok=filter===“all”?!i.done:filter===“done”?i.done:i.type===filter&&!i.done;
+const ook=officeFilter===“all”||i.office===officeFilter;
+return sok&&ook;
+});
+app.innerHTML=`
 
-  useEffect(() => {
-    if (checked.current) return;
-    checked.current = true;
-    const oppositeType = currentItem.type === "lost" ? "found" : "lost";
-    const candidates = items.filter(i => i.id !== currentItem.id && i.type === oppositeType && !i.resolved);
-    if (candidates.length === 0) return;
-    const check = async () => {
-      setLoading(true);
-      try {
-        const blocks = [];
-        (currentItem.images || []).slice(0, 2).forEach(img => {
-          blocks.push({ type: "image", source: { type: "base64", media_type: img.match(/data:(.*?);/)?.[1] || "image/jpeg", data: img.split(",")[1] } });
-        });
-        (candidates[0].images || []).slice(0, 2).forEach(img => {
-          blocks.push({ type: "image", source: { type: "base64", media_type: img.match(/data:(.*?);/)?.[1] || "image/jpeg", data: img.split(",")[1] } });
-        });
-        blocks.push({ type: "text", text: `다음 두 물건이 같은 물건일 가능성이 있는지 판단해줘. 사진이 있으면 사진도 참고해줘. 반드시 JSON만 반환해. {"match": true/false, "reason": "한 줄 이유"}\n\n물건A (${currentItem.type === "lost" ? "분실" : "습득"}): ${currentItem.title} - ${currentItem.description}\n물건B (${candidates[0].type === "lost" ? "분실" : "습득"}): ${candidates[0].title} - ${candidates[0].description}` });
-        const res = await fetch("https://api.anthropic.com/v1/messages", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 200, messages: [{ role: "user", content: blocks }] }),
-        });
-        const data = await res.json();
-        const parsed = JSON.parse((data.content?.[0]?.text || "").replace(/```json|```/g, "").trim());
-        if (parsed.match) setMatch({ item: candidates[0], reason: parsed.reason });
-      } catch { } finally { setLoading(false); }
-    };
-    check();
-  }, []);
-
-  if (loading) return <div className="match-loading"><span className="dot-pulse">AI 매칭 중</span></div>;
-  if (!match) return null;
-  return (
-    <div className="match-badge">
-      <span className="match-icon">✦</span>
-      <span className="match-text">매칭 발견 · {match.item.title}</span>
-      <span className="match-reason">{match.reason}</span>
-    </div>
-  );
-}
-
-function ImageGallery({ images, onLightbox }) {
-  if (!images || images.length === 0) return null;
-  if (images.length === 1) return (
-    <div className="gallery-single" onClick={() => onLightbox(0)}>
-      <img src={images[0]} alt="사진" />
-      <span className="image-hint">클릭해서 크게 보기</span>
-    </div>
-  );
-  return (
-    <div className={`gallery-grid gallery-${Math.min(images.length, 4)}`}>
-      {images.slice(0, 4).map((img, i) => (
-        <div key={i} className="gallery-cell" onClick={() => onLightbox(i)}>
-          <img src={img} alt={`사진 ${i + 1}`} />
-          {i === 3 && images.length > 4 && <div className="gallery-more">+{images.length - 4}</div>}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function Card({ item, items, onResolve }) {
-  const [expanded, setExpanded] = useState(false);
-  const [lightboxIdx, setLightboxIdx] = useState(null);
-  const officeStyle = OFFICE_COLORS[item.pickupOffice] || {};
-  const hasImages = item.images && item.images.length > 0;
-  return (
-    <>
-      <div className={`card ${item.type}${item.resolved ? " resolved" : ""}`} onClick={() => setExpanded(!expanded)}>
-        <div className="card-header">
-          {hasImages ? (
-            <div className="card-thumb" onClick={(e) => { e.stopPropagation(); setLightboxIdx(0); }}>
-              <img src={item.images[0]} alt={item.title} />
-              {item.images.length > 1 && <span className="thumb-count">+{item.images.length - 1}</span>}
-              <span className="thumb-overlay">🔍</span>
-            </div>
-          ) : <span className="card-emoji">{item.emoji}</span>}
-          <div className="card-meta">
-            <span className={`tag ${item.type}`}>{item.type === "lost" ? "분실" : "습득"}</span>
-            <span className="card-date">{item.date}</span>
-          </div>
-          {item.resolved && <span className="resolved-badge">해결됨</span>}
-        </div>
-        <h3 className="card-title">{item.title}</h3>
-        <div className="card-locations">
-          <span className="card-lost-loc">📍 {item.lostLocation}</span>
-          <span className="office-pill" style={{ background: officeStyle.bg, color: officeStyle.color, borderColor: officeStyle.border }}>🏫 {item.pickupOffice}</span>
-        </div>
-        {expanded && (
-          <div className="card-detail" onClick={(e) => e.stopPropagation()}>
-            <ImageGallery images={item.images} onLightbox={(i) => setLightboxIdx(i)} />
-            <p className="card-desc">{item.description}</p>
-            <p className="card-contact">연락처 · {item.contact}</p>
-            {!item.resolved && <MatchBadge items={items} currentItem={item} />}
-            {!item.resolved && <button className="resolve-btn" onClick={() => onResolve(item.id)}>찾았어요 ✓</button>}
-          </div>
-        )}
+  <div class="app">
+    <div class="header">
+      <div>
+        <p style="font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Lost & Found · AI Matching</p>
+        <h1>분실물<br>게시판</h1>
+        <p>AI가 비슷한 물건을 자동으로 찾아드려요</p>
       </div>
-      {lightboxIdx !== null && (
-        <div className="lightbox" onClick={() => setLightboxIdx(null)}>
-          <button className="lightbox-close" onClick={() => setLightboxIdx(null)}>✕</button>
-          {item.images.length > 1 && <>
-            <button className="lightbox-nav left" onClick={(e) => { e.stopPropagation(); setLightboxIdx((lightboxIdx - 1 + item.images.length) % item.images.length); }}>‹</button>
-            <button className="lightbox-nav right" onClick={(e) => { e.stopPropagation(); setLightboxIdx((lightboxIdx + 1) % item.images.length); }}>›</button>
-          </>}
-          <img src={item.images[lightboxIdx]} alt="" onClick={(e) => e.stopPropagation()} />
-          {item.images.length > 1 && (
-            <div className="lightbox-dots" onClick={(e) => e.stopPropagation()}>
-              {item.images.map((_, i) => <span key={i} className={`lightbox-dot${i === lightboxIdx ? " active" : ""}`} onClick={() => setLightboxIdx(i)} />)}
-            </div>
-          )}
-        </div>
-      )}
-    </>
-  );
+      <button class="add-btn" onclick="openForm()">+ 등록하기</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-num lost">${items.filter(i=>i.type==="lost"&&!i.done).length}</div><div class="stat-label">분실</div></div>
+      <div class="stat"><div class="stat-num found">${items.filter(i=>i.type==="found"&&!i.done).length}</div><div class="stat-label">습득</div></div>
+      <div class="stat"><div class="stat-num resolved">${items.filter(i=>i.done).length}</div><div class="stat-label">해결됨</div></div>
+    </div>
+    <div class="filter-label">상태</div>
+    <div class="filters">
+      ${[["all","전체"],["lost","분실"],["found","습득"],["done","해결됨"]].map(([v,l])=>`<button class="fbtn${filter===v?" on":""}" onclick="setFilter('${v}')">${l}</button>`).join("")}
+    </div>
+    <div class="filter-label">교무실</div>
+    <div class="filters">
+      <button class="fbtn${officeFilter==="all"?" on":""}" onclick="setOffice('all')">전체</button>
+      ${OFFICES.map(o=>{const s=OCOL[o];const on=officeFilter===o;return`<button class="fbtn${on?" on":""}" style="${on?`background:${s.bg};color:${s.c};border-color:${s.b};`:""}" onclick="setOffice('${o}')">${o}</button>`}).join("")}
+    </div>
+    <div class="cards">
+      ${filtered.length===0?`<div class="empty">🔍<br>등록된 항목이 없어요</div>`:filtered.map(item=>renderCard(item)).join("")}
+    </div>
+  </div>
+  ${showForm?renderForm():""}
+  ${lightbox?renderLightbox():""}
+  `;
 }
 
-function App() {
-  const [items, setItems] = useState(SAMPLE_ITEMS);
-  const [filter, setFilter] = useState("all");
-  const [officeFilter, setOfficeFilter] = useState("all");
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ type: "lost", title: "", description: "", lostLocation: LOST_LOCATIONS[0], pickupOffice: PICKUP_OFFICES[0], emoji: EMOJIS[0], contact: "", images: [] });
-  const fileInputRef = useRef(null);
+function renderCard(item){
+const exp=expandedId===item.id;
+const os=OCOL[item.office]||{};
+const hasImg=item.imgs&&item.imgs.length>0;
+return`<div class="card ${item.type}${item.done?" done":""}" onclick="toggleCard(${item.id})"> <div class="card-top"> ${hasImg?`<div class="card-thumb" onclick="event.stopPropagation();openLightbox(${item.id},0)"><img src="${item.imgs[0]}">${item.imgs.length>1?`<span class="plus">+${item.imgs.length-1}</span>`:””}</div>`:`<span class="card-emoji">${item.emoji}</span>`} <span class="tag ${item.type}">${item.type==="lost"?"분실":"습득"}</span> <span class="date">${item.date}</span> ${item.done?`<span class="done-badge">해결됨</span>`:""} </div> <div class="card-title">${item.title}</div> <div class="card-locs"> <span class="loc">📍 ${item.loc}</span> <span class="office" style="background:${os.bg};color:${os.c};border-color:${os.b}">🏫 ${item.office}</span> </div> ${exp?`<div class="detail" onclick="event.stopPropagation()">
+${renderGallery(item)}
+<div class="desc">${item.desc}</div>
+<div class="contact">연락처 · ${item.contact}</div>
+${!item.done?renderMatch(item):””}
+${!item.done?`<button class="resolve-btn" onclick="resolve(${item.id})">찾았어요 ✓</button>`:””}
+</div>`:””}
 
-  const filtered = items.filter(i => {
-    const statusOk = filter === "all" ? !i.resolved : filter === "resolved" ? i.resolved : i.type === filter && !i.resolved;
-    const officeOk = officeFilter === "all" || i.pickupOffice === officeFilter;
-    return statusOk && officeOk;
-  });
-
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files || []);
-    const remaining = MAX_IMAGES - form.images.length;
-    const toProcess = files.slice(0, remaining);
-    if (!toProcess.length) return;
-    let loaded = 0;
-    const newImages = [];
-    toProcess.forEach((file, idx) => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        newImages[idx] = ev.target.result;
-        if (++loaded === toProcess.length) setForm(f => ({ ...f, images: [...f.images, ...newImages.filter(Boolean)] }));
-      };
-      reader.readAsDataURL(file);
-    });
-    e.target.value = "";
-  };
-
-  const removeImage = (idx) => setForm(f => ({ ...f, images: f.images.filter((_, i) => i !== idx) }));
-  const handleSubmit = () => {
-    if (!form.title.trim() || !form.contact.trim()) return;
-    setItems([{ id: Date.now(), ...form, date: new Date().toISOString().slice(0, 10), resolved: false }, ...items]);
-    setShowForm(false);
-    setForm({ type: "lost", title: "", description: "", lostLocation: LOST_LOCATIONS[0], pickupOffice: PICKUP_OFFICES[0], emoji: EMOJIS[0], contact: "", images: [] });
-  };
-  const handleResolve = (id) => setItems(items.map(i => i.id === id ? { ...i, resolved: true } : i));
-
-  return (
-    <>
-      <div className="app">
-        <header className="header">
-          <div className="header-top">
-            <div>
-              <p className="header-label">Lost &amp; Found · AI Matching</p>
-              <h1>분실물<br />게시판</h1>
-              <p className="header-sub">AI가 비슷한 물건을 자동으로 찾아드려요</p>
-            </div>
-            <button className="add-btn" onClick={() => setShowForm(true)}>+ 등록하기</button>
-          </div>
-        </header>
-
-        <div className="stats">
-          <div className="stat"><div className="stat-num lost">{items.filter(i => i.type === "lost" && !i.resolved).length}</div><div className="stat-label">분실</div></div>
-          <div className="stat"><div className="stat-num found">{items.filter(i => i.type === "found" && !i.resolved).length}</div><div className="stat-label">습득</div></div>
-          <div className="stat"><div className="stat-num resolved">{items.filter(i => i.resolved).length}</div><div className="stat-label">해결됨</div></div>
-        </div>
-
-        <div className="filter-group">
-          <div className="filter-group-label">상태</div>
-          <div className="filters" style={{marginBottom: 8}}>
-            {[["all","전체"],["lost","분실"],["found","습득"],["resolved","해결됨"]].map(([v,l]) => (
-              <button key={v} className={`filter-btn${filter === v ? " active" : ""}`} onClick={() => setFilter(v)}>{l}</button>
-            ))}
-          </div>
-        </div>
-        <div className="filter-group">
-          <div className="filter-group-label">교무실</div>
-          <div className="filters">
-            <button className={`filter-btn${officeFilter === "all" ? " active" : ""}`} onClick={() => setOfficeFilter("all")}>전체</button>
-            {PICKUP_OFFICES.map(o => {
-              const s = OFFICE_COLORS[o];
-              const isActive = officeFilter === o;
-              return <button key={o} className={`filter-btn office-btn${isActive ? " active" : ""}`} style={isActive ? {background: s.bg, color: s.color, borderColor: s.border} : {}} onClick={() => setOfficeFilter(o)}>{o}</button>;
-            })}
-          </div>
-        </div>
-
-        <div className="cards">
-          {filtered.length === 0 ? (
-            <div className="empty"><div className="empty-icon">🔍</div><p>등록된 항목이 없어요</p></div>
-          ) : filtered.map(item => <Card key={item.id} item={item} items={items} onResolve={handleResolve} />)}
-        </div>
-      </div>
-
-      {showForm && (
-        <div className="modal-overlay" onClick={() => setShowForm(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>물건 등록</h2>
-            <div className="form-row">
-              <label className="form-label">유형</label>
-              <div className="type-toggle">
-                <button className={`type-btn${form.type === "lost" ? " active-lost" : ""}`} onClick={() => setForm({...form, type: "lost"})}>잃어버렸어요</button>
-                <button className={`type-btn${form.type === "found" ? " active-found" : ""}`} onClick={() => setForm({...form, type: "found"})}>주웠어요</button>
-              </div>
-            </div>
-            <div className="form-row">
-              <label className="form-label">사진 (최대 {MAX_IMAGES}장)</label>
-              <input type="file" accept="image/*" multiple ref={fileInputRef} style={{display:"none"}} onChange={handleImageChange} />
-              <div className="photo-section">
-                <div className="photo-previews">
-                  {form.images.map((img, idx) => (
-                    <div key={idx} className="photo-preview">
-                      <img src={img} alt={`사진 ${idx+1}`} />
-                      <button className="photo-preview-remove" onClick={() => removeImage(idx)}>✕</button>
-                    </div>
-                  ))}
-                  {form.images.length < MAX_IMAGES && (
-                    <div className="photo-add-btn" onClick={() => fileInputRef.current?.click()}>
-                      <span>📷</span><span className="photo-add-label">추가</span>
-                    </div>
-                  )}
-                </div>
-                <p className="photo-hint">{form.images.length}/{MAX_IMAGES}장 · 사진이 있으면 AI 매칭이 더 정확해요</p>
-              </div>
-            </div>
-            <div className="form-row">
-              <label className="form-label">아이콘</label>
-              <div className="emoji-grid">
-                {EMOJIS.map(e => (
-                  <button key={e} className={`emoji-btn${form.emoji === e ? " active" : ""}`} onClick={() => setForm({...form, emoji: e})}>{e === "기타" ? "···" : e}</button>
-                ))}
-              </div>
-            </div>
-            <div className="form-row">
-              <label className="form-label">물건 이름 *</label>
-              <input placeholder="예: 갤럭시 버즈2 프로" value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} />
-            </div>
-            <div className="form-row">
-              <label className="form-label">설명</label>
-              <textarea placeholder="색상, 특징 등을 적어주세요" value={form.description} onChange={(e) => setForm({...form, description: e.target.value})} />
-            </div>
-            <div className="form-row">
-              <label className="form-label">분실/습득 장소</label>
-              <select value={form.lostLocation} onChange={(e) => setForm({...form, lostLocation: e.target.value})}>
-                {LOST_LOCATIONS.map(l => <option key={l}>{l}</option>)}
-              </select>
-            </div>
-            <div className="form-row">
-              <label className="form-label">찾아가는 교무실</label>
-              <div className="office-grid">
-                {PICKUP_OFFICES.map(o => {
-                  const s = OFFICE_COLORS[o];
-                  const isActive = form.pickupOffice === o;
-                  return <button key={o} className={`office-select-btn${isActive ? " active" : ""}`} style={isActive ? {background: s.bg, color: s.color, borderColor: s.border, fontWeight: 500} : {}} onClick={() => setForm({...form, pickupOffice: o})}>{o}</button>;
-                })}
-              </div>
-            </div>
-            <div className="form-row">
-              <label className="form-label">연락처 (학번/이름) *</label>
-              <input placeholder="예: 2학년 3반 홍길동" value={form.contact} onChange={(e) => setForm({...form, contact: e.target.value})} />
-            </div>
-            <div className="modal-actions">
-              <button className="cancel-btn" onClick={() => setShowForm(false)}>취소</button>
-              <button className="submit-btn" onClick={handleSubmit}>등록하기</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
+  </div>`;
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-```
+function renderGallery(item){
+if(!item.imgs||item.imgs.length===0)return””;
+if(item.imgs.length===1)return`<div class="gal1" onclick="openLightbox(${item.id},0)"><img src="${item.imgs[0]}"></div>`;
+const n=Math.min(item.imgs.length,4);
+const cls=`gal-grid g${n}`;
+return`<div class="${cls}">${item.imgs.slice(0,4).map((img,i)=>`<div class="gc" onclick="openLightbox(${item.id},${i})"><img src="${img}">${i===3&&item.imgs.length>4?`<div class="gc-more">+${item.imgs.length-4}</div>`:””}</div>`).join("")}</div>`;
+}
 
-  </script>
+function renderMatch(item){
+const m=matches[item.id];
+if(m===undefined){
+checkMatch(item);
+return`<div class="matching">AI 매칭 중...</div>`;
+}
+if(!m)return””;
+return`<div class="match"><div class="match-title">✦ 매칭 발견 · ${m.title}</div><div class="match-why">${m.reason}</div></div>`;
+}
+
+async function checkMatch(item){
+const opp=item.type===“lost”?“found”:“lost”;
+const cands=items.filter(i=>i.id!==item.id&&i.type===opp&&!i.done);
+if(!cands.length){matches[item.id]=null;render();return;}
+const c=cands[0];
+try{
+const blocks=[];
+(item.imgs||[]).slice(0,1).forEach(img=>{blocks.push({type:“image”,source:{type:“base64”,media_type:img.match(/data:(.*?);/)?.[1]||“image/jpeg”,data:img.split(”,”)[1]}});});
+(c.imgs||[]).slice(0,1).forEach(img=>{blocks.push({type:“image”,source:{type:“base64”,media_type:img.match(/data:(.*?);/)?.[1]||“image/jpeg”,data:img.split(”,”)[1]}});});
+blocks.push({type:“text”,text:`두 물건이 같은 것일 가능성이 있는지 판단해. 반드시 JSON만: {"match":true/false,"reason":"한줄이유"}\n물건A(${item.type==="lost"?"분실":"습득"}):${item.title} ${item.desc}\n물건B(${c.type==="lost"?"분실":"습득"}):${c.title} ${c.desc}`});
+const res=await fetch(“https://api.anthropic.com/v1/messages”,{method:“POST”,headers:{“Content-Type”:“application/json”},body:JSON.stringify({model:“claude-sonnet-4-20250514”,max_tokens:150,messages:[{role:“user”,content:blocks}]})});
+const data=await res.json();
+const parsed=JSON.parse((data.content?.[0]?.text||”{}”).replace(/`json|`/g,””).trim());
+matches[item.id]=parsed.match?{title:c.title,reason:parsed.reason}:null;
+}catch{matches[item.id]=null;}
+render();
+}
+
+function renderLightbox(){
+const {itemId,idx}=lightbox;
+const item=items.find(i=>i.id===itemId);
+if(!item||!item.imgs[idx])return””;
+return`<div class="lightbox" onclick="closeLightbox()"> <button class="lb-close" onclick="closeLightbox()">✕</button> ${item.imgs.length>1?`<button class="lb-nav l" onclick="event.stopPropagation();lbNav(-1)">‹</button><button class="lb-nav r" onclick="event.stopPropagation();lbNav(1)">›</button>`:""} <img src="${item.imgs[idx]}" onclick="event.stopPropagation()"> ${item.imgs.length>1?`<div class="lb-dots">${item.imgs.map((_,i)=>`<div class="lb-dot${i===idx?" on":""}" onclick="event.stopPropagation();setLbIdx(${i})"></div>`).join(””)}</div>`:””}
+
+  </div>`;
+}
+
+function renderForm(){
+const os=OCOL[form.office]||{};
+return`<div class="overlay" onclick="closeForm()"> <div class="modal" onclick="event.stopPropagation()"> <h2>물건 등록</h2> <div class="frow"> <label class="flabel">유형</label> <div class="toggle"> <button class="tbtn${form.type==="lost"?" lost-on":""}" onclick="setFormType('lost')">잃어버렸어요</button> <button class="tbtn${form.type==="found"?" found-on":""}" onclick="setFormType('found')">주웠어요</button> </div> </div> <div class="frow"> <label class="flabel">사진 (최대 ${MAX_IMG}장)</label> <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="handleFiles(this)"> <div class="photos"> ${form.imgs.map((img,i)=>`<div class="ph-prev"><img src="${img}"><button class="ph-rm" onclick="rmImg(${i})">✕</button></div>`).join("")} ${form.imgs.length<MAX_IMG?`<div class="ph-add" onclick="document.getElementById('fileInput').click()"><span>📷</span><span>추가</span></div>`:""} </div> <div class="ph-hint">${form.imgs.length}/${MAX_IMG}장</div> </div> <div class="frow"> <label class="flabel">아이콘</label> <div class="emoji-row">${EMOJIS.map(e=>`<button class=“ebtn${form.emoji===e?” on”:””}” onclick=“setEmoji(’${e}’)”>${e}</button>`).join("")}</div> </div> <div class="frow"> <label class="flabel">물건 이름 *</label> <input placeholder="예: 갤럭시 버즈2 프로" value="${form.title}" oninput="form.title=this.value"> </div> <div class="frow"> <label class="flabel">설명</label> <textarea placeholder="색상, 특징 등" oninput="form.desc=this.value">${form.desc}</textarea> </div> <div class="frow"> <label class="flabel">분실/습득 장소</label> <select onchange="form.loc=this.value">${LOCS.map(l=>`<option${form.loc===l?” selected”:””}>${l}</option>`).join("")}</select> </div> <div class="frow"> <label class="flabel">찾아가는 교무실</label> <div class="office-grid">${OFFICES.map(o=>{const s=OCOL[o];const on=form.office===o;return`<button class=“obtn${on?” active”:””}” style=”${on?`background:${s.bg};color:${s.c};border-color:${s.b};font-weight:500`:””}” onclick=“setOfficeForm(’${o}’)”>${o}</button>`}).join(””)}</div>
+</div>
+<div class="frow">
+<label class="flabel">연락처 *</label>
+<input placeholder="예: 2학년 3반 홍길동" value="${form.contact}" oninput="form.contact=this.value">
+</div>
+<div class="actions">
+<button class="cbtn" onclick="closeForm()">취소</button>
+<button class="sbtn" onclick="submitForm()">등록하기</button>
+</div>
+</div>
+
+  </div>`;
+}
+
+function toggleCard(id){expandedId=expandedId===id?null:id;render();}
+function setFilter(v){filter=v;render();}
+function setOffice(v){officeFilter=v;render();}
+function resolve(id){items=items.map(i=>i.id===id?{…i,done:true}:i);render();}
+function openForm(){showForm=true;render();}
+function closeForm(){showForm=false;render();}
+function setFormType(t){form.type=t;render();}
+function setEmoji(e){form.emoji=e;render();}
+function setOfficeForm(o){form.office=o;render();}
+function rmImg(i){form.imgs=form.imgs.filter((_,j)=>j!==i);render();}
+function openLightbox(itemId,idx){lightbox={itemId,idx};render();}
+function closeLightbox(){lightbox=null;render();}
+function lbNav(d){const item=items.find(i=>i.id===lightbox.itemId);if(!item)return;lightbox.idx=(lightbox.idx+d+item.imgs.length)%item.imgs.length;render();}
+function setLbIdx(i){lightbox.idx=i;render();}
+
+function handleFiles(input){
+const files=Array.from(input.files||[]);
+const rem=MAX_IMG-form.imgs.length;
+const toLoad=files.slice(0,rem);
+if(!toLoad.length)return;
+let done=0;const newImgs=[];
+toLoad.forEach((f,i)=>{
+const r=new FileReader();
+r.onload=e=>{newImgs[i]=e.target.result;if(++done===toLoad.length){form.imgs=[…form.imgs,…newImgs.filter(Boolean)];render();}};
+r.readAsDataURL(f);
+});
+input.value=””;
+}
+
+function submitForm(){
+if(!form.title.trim()||!form.contact.trim())return;
+items=[{id:Date.now(),…form,date:new Date().toISOString().slice(0,10),done:false},…items];
+showForm=false;
+form={type:“lost”,title:””,desc:””,loc:LOCS[0],office:OFFICES[0],emoji:EMOJIS[0],contact:””,imgs:[]};
+render();
+}
+
+render();
+</script>
+
 </body>
 </html>
