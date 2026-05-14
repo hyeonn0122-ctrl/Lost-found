@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="ko">
 <head>
 <meta charset="UTF-8"/>
@@ -117,168 +116,168 @@ var form={type:"lost",title:"",desc:"",loc:LOCS[0],office:OFFICES[0],emoji:EMOJI
 var matches={};
 
 function render(){
-var app=document.getElementById(“app”);
-var filtered=items.filter(function(i){
-var sok=filter===“all”?!i.done:filter===“done”?i.done:i.type===filter&&!i.done;
-var ook=officeFilter===“all”||i.office===officeFilter;
-return sok&&ook;
-});
-var html=’<div class="app"><div class="hdr"><div>’;
-html+=’<p style="font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--mu);margin-bottom:6px">Lost & Found · AI Matching</p>’;
-html+=’<h1>분실물<br>게시판</h1><p>AI가 비슷한 물건을 자동으로 찾아드려요</p></div>’;
-html+=’<button class="abtn" onclick="openForm()">+ 등록하기</button></div>’;
-html+=’<div class="stats">’;
-html+=’<div class="stat"><div class="snum l">’+items.filter(function(i){return i.type===“lost”&&!i.done}).length+’</div><div class="slbl">분실</div></div>’;
-html+=’<div class="stat"><div class="snum f">’+items.filter(function(i){return i.type===“found”&&!i.done}).length+’</div><div class="slbl">습득</div></div>’;
-html+=’<div class="stat"><div class="snum r">’+items.filter(function(i){return i.done}).length+’</div><div class="slbl">해결됨</div></div>’;
-html+=’</div>’;
-html+=’<div class="flbl">상태</div><div class="fltrs">’;
-[[“all”,“전체”],[“lost”,“분실”],[“found”,“습득”],[“done”,“해결됨”]].forEach(function(x){
-html+=’<button class=“fb’+(filter===x[0]?” on”:””)+’” onclick=“setFilter('’+x[0]+’')”>’+x[1]+’</button>’;
-});
-html+=’</div><div class="flbl">교무실</div><div class="fltrs">’;
-html+=’<button class=“fb’+(officeFilter===“all”?” on”:””)+’” onclick=“setOffice('all')”>전체</button>’;
-OFFICES.forEach(function(o){
-var s=OCOL[o];var on=officeFilter===o;
-html+=’<button class=“fb’+(on?” on”:””)+’” style=”’+(on?“background:”+s.bg+”;color:”+s.c+”;border-color:”+s.b+”;”:””)+’” onclick=“setOffice('’+o+’')”>’+o+’</button>’;
-});
-html+=’</div><div class="cards">’;
-if(filtered.length===0){html+=’<div class="empty">🔍<br>등록된 항목이 없어요</div>’;}
-else{filtered.forEach(function(item){html+=renderCard(item);});}
-html+=’</div></div>’;
-if(showForm)html+=renderForm();
-if(lbox)html+=renderLightbox();
-app.innerHTML=html;
+  var app=document.getElementById("app");
+  var filtered=items.filter(function(i){
+    var sok=filter==="all"?!i.done:filter==="done"?i.done:i.type===filter&&!i.done;
+    var ook=officeFilter==="all"||i.office===officeFilter;
+    return sok&&ook;
+  });
+  var html='<div class="app"><div class="hdr"><div>';
+  html+='<p style="font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--mu);margin-bottom:6px">Lost &amp; Found &middot; AI Matching</p>';
+  html+='<h1>분실물<br>게시판</h1><p>AI가 비슷한 물건을 자동으로 찾아드려요</p></div>';
+  html+='<button class="abtn" onclick="openForm()">+ 등록하기</button></div>';
+  html+='<div class="stats">';
+  html+='<div class="stat"><div class="snum l">'+items.filter(function(i){return i.type==="lost"&&!i.done}).length+'</div><div class="slbl">분실</div></div>';
+  html+='<div class="stat"><div class="snum f">'+items.filter(function(i){return i.type==="found"&&!i.done}).length+'</div><div class="slbl">습득</div></div>';
+  html+='<div class="stat"><div class="snum r">'+items.filter(function(i){return i.done}).length+'</div><div class="slbl">해결됨</div></div>';
+  html+='</div>';
+  html+='<div class="flbl">상태</div><div class="fltrs">';
+  [["all","전체"],["lost","분실"],["found","습득"],["done","해결됨"]].forEach(function(x){
+    html+='<button class="fb'+(filter===x[0]?" on":"")+'" onclick="setFilter(\''+x[0]+'\')">'+x[1]+'</button>';
+  });
+  html+='</div><div class="flbl">교무실</div><div class="fltrs">';
+  html+='<button class="fb'+(officeFilter==="all"?" on":"")+'" onclick="setOffice(\'all\')">전체</button>';
+  OFFICES.forEach(function(o){
+    var s=OCOL[o];var on=officeFilter===o;
+    html+='<button class="fb'+(on?" on":"")+'" style="'+(on?"background:"+s.bg+";color:"+s.c+";border-color:"+s.b+";":"")+'" onclick="setOffice(\''+o+'\')">'+o+'</button>';
+  });
+  html+='</div><div class="cards">';
+  if(filtered.length===0){html+='<div class="empty">🔍<br>등록된 항목이 없어요</div>';}
+  else{filtered.forEach(function(item){html+=renderCard(item);});}
+  html+='</div></div>';
+  if(showForm)html+=renderForm();
+  if(lbox)html+=renderLightbox();
+  app.innerHTML=html;
 }
 
 function renderCard(item){
-var exp=expandedId===item.id;
-var os=OCOL[item.office]||{};
-var hasImg=item.imgs&&item.imgs.length>0;
-var h=’<div class=“card ‘+item.type+(item.done?” done”:””)+’” onclick=“toggleCard(’+item.id+’)”>’;
-h+=’<div class="ctop">’;
-if(hasImg){
-h+=’<div class="cthumb" onclick="event.stopPropagation();openLb('+item.id+',0)"><img src="'+item.imgs[0]+'">’;
-if(item.imgs.length>1)h+=’<span class="cplus">+’+( item.imgs.length-1)+’</span>’;
-h+=’</div>’;
-}else{h+=’<span class="cemoji">’+item.emoji+’</span>’;}
-h+=’<span class="tag '+item.type+'">’+(item.type===“lost”?“분실”:“습득”)+’</span>’;
-h+=’<span class="cdate">’+item.date+’</span>’;
-if(item.done)h+=’<span class="dbadge">해결됨</span>’;
-h+=’</div><div class="ctitle">’+item.title+’</div>’;
-h+=’<div class="clocs"><span class="cloc">📍 ‘+item.loc+’</span>’;
-h+=’<span class="office" style="background:'+os.bg+';color:'+os.c+';border-color:'+os.b+'">🏫 ‘+item.office+’</span></div>’;
-if(exp){
-h+=’<div class="detail" onclick="event.stopPropagation()">’;
-h+=renderGallery(item);
-h+=’<div class="cdesc">’+item.desc+’</div>’;
-h+=’<div class="ccon">연락처 · ‘+item.contact+’</div>’;
-if(!item.done)h+=renderMatch(item);
-if(!item.done)h+=’<button class="rbtn" onclick="resolve('+item.id+')">찾았어요 ✓</button>’;
-h+=’</div>’;
-}
-h+=’</div>’;
-return h;
+  var exp=expandedId===item.id;
+  var os=OCOL[item.office]||{};
+  var hasImg=item.imgs&&item.imgs.length>0;
+  var h='<div class="card '+item.type+(item.done?" done":"")+'" onclick="toggleCard('+item.id+')">';
+  h+='<div class="ctop">';
+  if(hasImg){
+    h+='<div class="cthumb" onclick="event.stopPropagation();openLb('+item.id+',0)"><img src="'+item.imgs[0]+'">';
+    if(item.imgs.length>1)h+='<span class="cplus">+'+( item.imgs.length-1)+'</span>';
+    h+='</div>';
+  }else{h+='<span class="cemoji">'+item.emoji+'</span>';}
+  h+='<span class="tag '+item.type+'">'+(item.type==="lost"?"분실":"습득")+'</span>';
+  h+='<span class="cdate">'+item.date+'</span>';
+  if(item.done)h+='<span class="dbadge">해결됨</span>';
+  h+='</div><div class="ctitle">'+item.title+'</div>';
+  h+='<div class="clocs"><span class="cloc">📍 '+item.loc+'</span>';
+  h+='<span class="office" style="background:'+os.bg+';color:'+os.c+';border-color:'+os.b+'">🏫 '+item.office+'</span></div>';
+  if(exp){
+    h+='<div class="detail" onclick="event.stopPropagation()">';
+    h+=renderGallery(item);
+    h+='<div class="cdesc">'+item.desc+'</div>';
+    h+='<div class="ccon">연락처 · '+item.contact+'</div>';
+    if(!item.done)h+=renderMatch(item);
+    if(!item.done)h+='<button class="rbtn" onclick="resolve('+item.id+')">찾았어요 ✓</button>';
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
 }
 
 function renderGallery(item){
-if(!item.imgs||item.imgs.length===0)return””;
-if(item.imgs.length===1)return’<div class="g1" onclick="openLb('+item.id+',0)"><img src="'+item.imgs[0]+'"></div>’;
-var n=Math.min(item.imgs.length,4);
-var h=’<div class="gg g'+n+'">’;
-item.imgs.slice(0,4).forEach(function(img,i){
-h+=’<div class="gc" onclick="openLb('+item.id+','+i+')"><img src="'+img+'">’;
-if(i===3&&item.imgs.length>4)h+=’<div class="gcmore">+’+(item.imgs.length-4)+’</div>’;
-h+=’</div>’;
-});
-h+=’</div>’;
-return h;
+  if(!item.imgs||item.imgs.length===0)return"";
+  if(item.imgs.length===1)return'<div class="g1" onclick="openLb('+item.id+',0)"><img src="'+item.imgs[0]+'"></div>';
+  var n=Math.min(item.imgs.length,4);
+  var h='<div class="gg g'+n+'">';
+  item.imgs.slice(0,4).forEach(function(img,i){
+    h+='<div class="gc" onclick="openLb('+item.id+','+i+')"><img src="'+img+'">';
+    if(i===3&&item.imgs.length>4)h+='<div class="gcmore">+'+(item.imgs.length-4)+'</div>';
+    h+='</div>';
+  });
+  h+='</div>';
+  return h;
 }
 
 function renderMatch(item){
-var m=matches[item.id];
-if(m===undefined){checkMatch(item);return’<div class="mwait">AI 매칭 중…</div>’;}
-if(!m)return””;
-return’<div class="match"><div class="mtitle">✦ 매칭 발견 · ‘+m.title+’</div><div class="mwhy">’+m.reason+’</div></div>’;
+  var m=matches[item.id];
+  if(m===undefined){checkMatch(item);return'<div class="mwait">AI 매칭 중...</div>';}
+  if(!m)return"";
+  return'<div class="match"><div class="mtitle">✦ 매칭 발견 · '+m.title+'</div><div class="mwhy">'+m.reason+'</div></div>';
 }
 
 function checkMatch(item){
-var opp=item.type===“lost”?“found”:“lost”;
-var cands=items.filter(function(i){return i.id!==item.id&&i.type===opp&&!i.done;});
-if(!cands.length){matches[item.id]=null;render();return;}
-var c=cands[0];
-var blocks=[];
-(item.imgs||[]).slice(0,1).forEach(function(img){
-blocks.push({type:“image”,source:{type:“base64”,media_type:img.match(/data:(.*?);/)[1]||“image/jpeg”,data:img.split(”,”)[1]}});
-});
-(c.imgs||[]).slice(0,1).forEach(function(img){
-blocks.push({type:“image”,source:{type:“base64”,media_type:img.match(/data:(.*?);/)[1]||“image/jpeg”,data:img.split(”,”)[1]}});
-});
-blocks.push({type:“text”,text:“두 물건이 같은 것일 가능성이 있는지 판단해. 반드시 JSON만: {"match":true/false,"reason":"한줄이유"}\n물건A(”+(item.type===“lost”?“분실”:“습득”)+”):”+item.title+” “+item.desc+”\n물건B(”+(c.type===“lost”?“분실”:“습득”)+”):”+c.title+” “+c.desc});
-fetch(“https://api.anthropic.com/v1/messages”,{method:“POST”,headers:{“Content-Type”:“application/json”},body:JSON.stringify({model:“claude-sonnet-4-20250514”,max_tokens:150,messages:[{role:“user”,content:blocks}]})})
-.then(function(r){return r.json();})
-.then(function(data){
-var txt=(data.content&&data.content[0]&&data.content[0].text)||”{}”;
-txt=txt.replace(/`json|`/g,””).trim();
-var parsed=JSON.parse(txt);
-matches[item.id]=parsed.match?{title:c.title,reason:parsed.reason}:null;
-render();
-})
-.catch(function(){matches[item.id]=null;render();});
+  var opp=item.type==="lost"?"found":"lost";
+  var cands=items.filter(function(i){return i.id!==item.id&&i.type===opp&&!i.done;});
+  if(!cands.length){matches[item.id]=null;render();return;}
+  var c=cands[0];
+  var blocks=[];
+  (item.imgs||[]).slice(0,1).forEach(function(img){
+    blocks.push({type:"image",source:{type:"base64",media_type:img.match(/data:(.*?);/)[1]||"image/jpeg",data:img.split(",")[1]}});
+  });
+  (c.imgs||[]).slice(0,1).forEach(function(img){
+    blocks.push({type:"image",source:{type:"base64",media_type:img.match(/data:(.*?);/)[1]||"image/jpeg",data:img.split(",")[1]}});
+  });
+  blocks.push({type:"text",text:"두 물건이 같은 것일 가능성이 있는지 판단해. 반드시 JSON만: {\"match\":true/false,\"reason\":\"한줄이유\"}\n물건A("+(item.type==="lost"?"분실":"습득")+"):"+item.title+" "+item.desc+"\n물건B("+(c.type==="lost"?"분실":"습득")+"):"+c.title+" "+c.desc});
+  fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:150,messages:[{role:"user",content:blocks}]})})
+  .then(function(r){return r.json();})
+  .then(function(data){
+    var txt=(data.content&&data.content[0]&&data.content[0].text)||"{}";
+    txt=txt.replace(/```json|```/g,"").trim();
+    var parsed=JSON.parse(txt);
+    matches[item.id]=parsed.match?{title:c.title,reason:parsed.reason}:null;
+    render();
+  })
+  .catch(function(){matches[item.id]=null;render();});
 }
 
 function renderLightbox(){
-var item=items.filter(function(i){return i.id===lbox.itemId;})[0];
-if(!item||!item.imgs[lbox.idx])return””;
-var h=’<div class="lb" onclick="closeLb()"><button class="lbx" onclick="closeLb()">✕</button>’;
-if(item.imgs.length>1){
-h+=’<button class="lbn l" onclick="event.stopPropagation();lbNav(-1)">‹</button>’;
-h+=’<button class="lbn r" onclick="event.stopPropagation();lbNav(1)">›</button>’;
-}
-h+=’<img src="'+item.imgs[lbox.idx]+'" onclick="event.stopPropagation()">’;
-if(item.imgs.length>1){
-h+=’<div class="lbd">’;
-item.imgs.forEach(function(_,i){h+=’<div class=“lbdot’+(i===lbox.idx?” on”:””)+’” onclick=“event.stopPropagation();setLbIdx(’+i+’)”></div>’;});
-h+=’</div>’;
-}
-h+=’</div>’;
-return h;
+  var item=items.filter(function(i){return i.id===lbox.itemId;})[0];
+  if(!item||!item.imgs[lbox.idx])return"";
+  var h='<div class="lb" onclick="closeLb()"><button class="lbx" onclick="closeLb()">✕</button>';
+  if(item.imgs.length>1){
+    h+='<button class="lbn l" onclick="event.stopPropagation();lbNav(-1)">&#8249;</button>';
+    h+='<button class="lbn r" onclick="event.stopPropagation();lbNav(1)">&#8250;</button>';
+  }
+  h+='<img src="'+item.imgs[lbox.idx]+'" onclick="event.stopPropagation()">';
+  if(item.imgs.length>1){
+    h+='<div class="lbd">';
+    item.imgs.forEach(function(_,i){h+='<div class="lbdot'+(i===lbox.idx?" on":"")+'" onclick="event.stopPropagation();setLbIdx('+i+')"></div>';});
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
 }
 
 function renderForm(){
-var os=OCOL[form.office]||{};
-var h=’<div class="ov" onclick="closeForm()"><div class="modal" onclick="event.stopPropagation()">’;
-h+=’<h2>물건 등록</h2>’;
-h+=’<div class="frow"><label class="flabel">유형</label><div class="tgl">’;
-h+=’<button class=“tbtn’+(form.type===“lost”?” lon”:””)+’” onclick=“setFType('lost')”>잃어버렸어요</button>’;
-h+=’<button class=“tbtn’+(form.type===“found”?” fon”:””)+’” onclick=“setFType('found')”>주웠어요</button>’;
-h+=’</div></div>’;
-h+=’<div class="frow"><label class="flabel">사진 (최대’+MAX_IMG+‘장)</label>’;
-h+=’<input type="file" id="fi" accept="image/*" multiple style="display:none" onchange="handleFiles(this)">’;
-h+=’<div class="photos">’;
-form.imgs.forEach(function(img,i){
-h+=’<div class="pprev"><img src="'+img+'"><button class="prm" onclick="rmImg('+i+')">✕</button></div>’;
-});
-if(form.imgs.length<MAX_IMG)h+=’<div class="padd" onclick="document.getElementById(\'fi\').click()"><span>📷</span><span>추가</span></div>’;
-h+=’</div><div class="phint">’+form.imgs.length+’/’+MAX_IMG+‘장</div></div>’;
-h+=’<div class="frow"><label class="flabel">아이콘</label><div class="erow">’;
-EMOJIS.forEach(function(e){h+=’<button class=“ebtn’+(form.emoji===e?” on”:””)+’” onclick=“setEmoji('’+e+’')”>’+e+’</button>’;});
-h+=’</div></div>’;
-h+=’<div class="frow"><label class="flabel">물건 이름 *</label><input placeholder="예: 갤럭시 버즈2 프로" value="'+form.title+'" oninput="form.title=this.value"></div>’;
-h+=’<div class="frow"><label class="flabel">설명</label><textarea placeholder="색상, 특징 등" oninput="form.desc=this.value">’+form.desc+’</textarea></div>’;
-h+=’<div class="frow"><label class="flabel">분실/습득 장소</label><select onchange="form.loc=this.value">’;
-LOCS.forEach(function(l){h+=’<option’+(form.loc===l?” selected”:””)+’>’+l+’</option>’;});
-h+=’</select></div>’;
-h+=’<div class="frow"><label class="flabel">찾아가는 교무실</label><div class="ogrid">’;
-OFFICES.forEach(function(o){
-var s=OCOL[o];var on=form.office===o;
-h+=’<button class=“obtn” style=”’+(on?“background:”+s.bg+”;color:”+s.c+”;border-color:”+s.b+”;font-weight:500”:””)+’” onclick=“setFOffice('’+o+’')”>’+o+’</button>’;
-});
-h+=’</div></div>’;
-h+=’<div class="frow"><label class="flabel">연락처 *</label><input placeholder="예: 2학년 3반 홍길동" value="'+form.contact+'" oninput="form.contact=this.value"></div>’;
-h+=’<div class="acts"><button class="cbtn" onclick="closeForm()">취소</button><button class="sbtn" onclick="submitForm()">등록하기</button></div>’;
-h+=’</div></div>’;
-return h;
+  var os=OCOL[form.office]||{};
+  var h='<div class="ov" onclick="closeForm()"><div class="modal" onclick="event.stopPropagation()">';
+  h+='<h2>물건 등록</h2>';
+  h+='<div class="frow"><label class="flabel">유형</label><div class="tgl">';
+  h+='<button class="tbtn'+(form.type==="lost"?" lon":"")+'" onclick="setFType(\'lost\')">잃어버렸어요</button>';
+  h+='<button class="tbtn'+(form.type==="found"?" fon":"")+'" onclick="setFType(\'found\')">주웠어요</button>';
+  h+='</div></div>';
+  h+='<div class="frow"><label class="flabel">사진 (최대'+MAX_IMG+'장)</label>';
+  h+='<input type="file" id="fi" accept="image/*" multiple style="display:none" onchange="handleFiles(this)">';
+  h+='<div class="photos">';
+  form.imgs.forEach(function(img,i){
+    h+='<div class="pprev"><img src="'+img+'"><button class="prm" onclick="rmImg('+i+')">✕</button></div>';
+  });
+  if(form.imgs.length<MAX_IMG)h+='<div class="padd" onclick="document.getElementById(\'fi\').click()"><span>📷</span><span>추가</span></div>';
+  h+='</div><div class="phint">'+form.imgs.length+'/'+MAX_IMG+'장</div></div>';
+  h+='<div class="frow"><label class="flabel">아이콘</label><div class="erow">';
+  EMOJIS.forEach(function(e){h+='<button class="ebtn'+(form.emoji===e?" on":"")+'" onclick="setEmoji(\''+e+'\')">'+e+'</button>';});
+  h+='</div></div>';
+  h+='<div class="frow"><label class="flabel">물건 이름 *</label><input placeholder="예: 갤럭시 버즈2 프로" value="'+form.title+'" oninput="form.title=this.value"></div>';
+  h+='<div class="frow"><label class="flabel">설명</label><textarea placeholder="색상, 특징 등" oninput="form.desc=this.value">'+form.desc+'</textarea></div>';
+  h+='<div class="frow"><label class="flabel">분실/습득 장소</label><select onchange="form.loc=this.value">';
+  LOCS.forEach(function(l){h+='<option'+(form.loc===l?" selected":"")+'>'+l+'</option>';});
+  h+='</select></div>';
+  h+='<div class="frow"><label class="flabel">찾아가는 교무실</label><div class="ogrid">';
+  OFFICES.forEach(function(o){
+    var s=OCOL[o];var on=form.office===o;
+    h+='<button class="obtn" style="'+(on?"background:"+s.bg+";color:"+s.c+";border-color:"+s.b+";font-weight:500":"")+'" onclick="setFOffice(\''+o+'\')">'+o+'</button>';
+  });
+  h+='</div></div>';
+  h+='<div class="frow"><label class="flabel">연락처 *</label><input placeholder="예: 2학년 3반 홍길동" value="'+form.contact+'" oninput="form.contact=this.value"></div>';
+  h+='<div class="acts"><button class="cbtn" onclick="closeForm()">취소</button><button class="sbtn" onclick="submitForm()">등록하기</button></div>';
+  h+='</div></div>';
+  return h;
 }
 
 function toggleCard(id){expandedId=expandedId===id?null:id;render();}
@@ -297,37 +296,36 @@ function lbNav(d){var item=items.filter(function(i){return i.id===lbox.itemId;})
 function setLbIdx(i){lbox.idx=i;render();}
 
 function handleFiles(input){
-var files=Array.from(input.files||[]);
-var rem=MAX_IMG-form.imgs.length;
-var toLoad=files.slice(0,rem);
-if(!toLoad.length)return;
-var done=0;var newImgs=[];
-toLoad.forEach(function(f,i){
-var r=new FileReader();
-r.onload=function(e){
-newImgs[i]=e.target.result;
-done++;
-if(done===toLoad.length){
-newImgs.forEach(function(img){if(img)form.imgs.push(img);});
-render();
-}
-};
-r.readAsDataURL(f);
-});
-input.value=””;
+  var files=Array.from(input.files||[]);
+  var rem=MAX_IMG-form.imgs.length;
+  var toLoad=files.slice(0,rem);
+  if(!toLoad.length)return;
+  var done=0;var newImgs=[];
+  toLoad.forEach(function(f,i){
+    var r=new FileReader();
+    r.onload=function(e){
+      newImgs[i]=e.target.result;
+      done++;
+      if(done===toLoad.length){
+        newImgs.forEach(function(img){if(img)form.imgs.push(img);});
+        render();
+      }
+    };
+    r.readAsDataURL(f);
+  });
+  input.value="";
 }
 
 function submitForm(){
-if(!form.title.trim()||!form.contact.trim())return;
-var newItem={id:Date.now(),type:form.type,title:form.title,desc:form.desc,loc:form.loc,office:form.office,emoji:form.emoji,contact:form.contact,imgs:form.imgs.slice(),date:new Date().toISOString().slice(0,10),done:false};
-items=[newItem].concat(items);
-showForm=false;
-form={type:“lost”,title:””,desc:””,loc:LOCS[0],office:OFFICES[0],emoji:EMOJIS[0],contact:””,imgs:[]};
-render();
+  if(!form.title.trim()||!form.contact.trim())return;
+  var newItem={id:Date.now(),type:form.type,title:form.title,desc:form.desc,loc:form.loc,office:form.office,emoji:form.emoji,contact:form.contact,imgs:form.imgs.slice(),date:new Date().toISOString().slice(0,10),done:false};
+  items=[newItem].concat(items);
+  showForm=false;
+  form={type:"lost",title:"",desc:"",loc:LOCS[0],office:OFFICES[0],emoji:EMOJIS[0],contact:"",imgs:[]};
+  render();
 }
 
 render();
 </script>
-
 </body>
-</html>
+</htm
